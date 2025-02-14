@@ -1,0 +1,63 @@
+const express = require('express');
+const app = express();
+app.use(express.json());
+const cors = require('cors');
+app.use(cors());
+
+let users = [
+    { username: 'testuser', email: 'test@gmail.com', password: 'password123' },
+]; // Dữ liệu mẫu
+
+app.get('/users', (req, res) => {
+  res.status(200).json(users); // Trả về danh sách tất cả người dùng
+});
+
+// Route GET cho '/'
+app.get('/', (req, res) => {
+    res.send('Welcome to the API!');
+});
+
+// Route POST cho '/register'
+app.post('/register', (req, res) => {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const userExists = users.some(
+        (user) => user.username === username || user.email === email
+    );
+
+    if (userExists) {
+        return res.status(409).json({ message: 'User already exists' });
+    }
+
+    const newUser = { username, email, password };
+    users.push(newUser);
+
+    return res.status(201).json({ message: 'User registered successfully', user: newUser });
+});
+
+// Route POST cho '/login'
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Invalid Username or Password' });
+    }
+
+    const user = users.find((u) => u.username === username && u.password === password);
+    if (user) {
+        return res.status(200).json({ message: 'Login successful', user });
+    } else {
+        return res.status(400).json({ message: 'Invalid Username or Password' });
+    }
+});
+
+// Route GET cho '/users'
+app.get('/users', (req, res) => {
+    res.status(200).json(users);
+});
+
+// Khởi chạy server
+app.listen(3500, () => console.log('Server running on http://localhost:3500'));
